@@ -23,12 +23,15 @@ module.exports = {
         if (payload.alt) {
             img.setAttribute('alt', payload.alt);
         }
+        if (payload.title) {
+            img.setAttribute('title', payload.title);
+        }
 
         figure.appendChild(img);
 
         if (payload.caption) {
             let figcaption = dom.createElement('figcaption');
-            figcaption.appendChild(dom.createTextNode(payload.caption));
+            figcaption.appendChild(dom.createRawHTMLSection(payload.caption));
             figure.appendChild(figcaption);
         }
 
