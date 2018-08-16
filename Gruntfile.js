@@ -94,7 +94,9 @@ var config = require('./core/server/config'),
                 },
 
                 dev: {
-                    options: {}
+                    options: {
+                        debug: true
+                    }
                 },
                 test: {
                     options: {

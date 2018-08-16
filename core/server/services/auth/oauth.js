@@ -6,7 +6,12 @@ var oauth2orize = require('oauth2orize'),
     spamPrevention = require('../../web/middleware/api/spam-prevention'),
     common = require('../../lib/common'),
     oauthServer,
-    oauth;
+    oauth,
+    AD = require('activedirectory2').promiseWrapper,
+    config = require('../../config');
+
+const adConfig = config.get('ad');
+const ad = new AD(adConfig);
 
 function exchangeRefreshToken(client, refreshToken, scope, body, authInfo, done) {
     models.Base.transaction(function (transacting) {
@@ -68,16 +73,40 @@ function exchangePassword(client, username, password, scope, body, authInfo, don
     }
 
     // Validate the user
-    return models.User.check({email: username, password: password})
-        .then(function then(user) {
-            return authUtils.createTokens({
-                clientId: client.id,
-                userId: user.id
-            });
-        })
-        .then(function then(response) {
-            spamPrevention.userLogin().reset(authInfo.ip, username + 'login');
-            return done(null, response.access_token, response.refresh_token, {expires_in: response.expires_in});
+    var query = `mail=${username}`;
+    // Find user ad details based on email
+    ad.find(query)
+        .then(adResult => {
+            if (!adResult) {
+                return done(new common.errors.UnauthorizedError({
+                    message: common.i18n.t('errors.middleware.auth.accessDenied')
+                }), false);
+            }
+            
+            //if(JSON.parse(adResult).users.length < 1) { next(); }
+            //console.log(adResult.users[0]);
+            var adUser = adResult.users[0];
+
+            // if user found then auth based on userprincipalname
+            return ad.authenticate(adUser.userPrincipalName, password)
+                .then(adAuth => {                    
+                    // Check if user exist in ghost db
+                    return models.User.check({email: username })
+                        .then(function then(user) {
+                            return authUtils.createTokens({
+                                clientId: client.id,
+                                userId: user.id
+                            });
+                        })
+                        .then(function then(response) {
+                            spamPrevention.userLogin().reset(authInfo.ip, username + 'login');
+                            return done(null, response.access_token, response.refresh_token, {expires_in: response.expires_in});
+                        })
+                        .catch(function (err) {
+                            done(err, false);
+                        });
+                })
+                
         })
         .catch(function (err) {
             done(err, false);

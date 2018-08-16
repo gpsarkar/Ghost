@@ -67,7 +67,48 @@ roles = {
         tasks = [
             localUtils.validate(docName, {opts: permittedOptions}),
             localUtils.convertOptions(),
-            localUtils.handlePermissions(docName, 'browse'),
+            //localUtils.handlePermissions(docName, 'browse'),
+            modelQuery
+        ];
+
+        // Pipeline calls each task passing the result of one to be the arguments for the next
+        return pipeline(tasks, options);
+    },
+
+    /**
+     * ### contributorRole
+     * Find the contributorRole only
+     *
+     *
+     * @public
+     * @returns {Promise(Roles)} Roles Collection
+     */
+    contributorRole: function contributorRole(options) {
+        var permittedOptions = ['permissions'],
+            tasks;
+
+        /**
+         * ### Model Query
+         * Make the call to the Model layer
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function modelQuery(options) {
+            return models.Role.findAll(options)
+                .then(function onModelResponse(models) {
+                    var roles = models.map(function (role) {
+                        return role.toJSON();
+                    });
+                    roles = roles.filter(role => role.name === 'Contributor');
+                    return roles[0];
+                });
+        }
+
+        // Push all of our tasks into a `tasks` array in the correct order
+        tasks = [
+            localUtils.validate(docName, {opts: permittedOptions}),
+            localUtils.convertOptions(),
+            //localUtils.handlePermissions(docName, 'browse'),
             modelQuery
         ];
 
