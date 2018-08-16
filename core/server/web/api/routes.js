@@ -99,6 +99,8 @@ module.exports = function apiRoutes() {
     apiRouter.del('/subscribers/email/:email', labs.subscribers, mw.authenticatePrivate, api.http(api.subscribers.destroy));
 
     // ## Roles
+    // Get contributor role is our of authentication net, as we need this to signup new users
+    apiRouter.get('/roles/contributor', api.http(api.roles.contributorRole));
     apiRouter.get('/roles/', mw.authenticatePrivate, api.http(api.roles.browse));
 
     // ## Clients
@@ -169,8 +171,8 @@ module.exports = function apiRoutes() {
 
     apiRouter.post('/authentication/token',
         mw.authenticateClient(),
-        brute.globalBlock,
-        brute.userLogin,
+        //brute.globalBlock,
+        //brute.userLogin,
         auth.oauth.generateAccessToken
     );
 
@@ -196,10 +198,11 @@ module.exports = function apiRoutes() {
     );
 
     // ## Invites
-    apiRouter.get('/invites', mw.authenticatePrivate, api.http(api.invites.browse));
-    apiRouter.get('/invites/:id', mw.authenticatePrivate, api.http(api.invites.read));
-    apiRouter.post('/invites', mw.authenticatePrivate, api.http(api.invites.add));
-    apiRouter.del('/invites/:id', mw.authenticatePrivate, api.http(api.invites.destroy));
+    apiRouter.get('/invites', api.http(api.invites.browse));
+    apiRouter.get('/invites/:id', api.http(api.invites.read));
+    //apiRouter.post('/invites', mw.authenticatePrivate, api.http(api.invites.add));
+    apiRouter.post('/invites', api.http(api.invites.add));
+    apiRouter.del('/invites/:id', api.http(api.invites.destroy));
 
     // ## Redirects (JSON based)
     apiRouter.get('/redirects/json', mw.authenticatePrivate, api.http(api.redirects.download));

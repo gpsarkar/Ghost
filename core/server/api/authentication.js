@@ -14,7 +14,7 @@ const Promise = require('bluebird'),
     mailAPI = require('./mail'),
     settingsAPI = require('./settings'),
     tokenSecurity = {};
-
+    
 let authentication;
 
 /**
@@ -367,7 +367,7 @@ authentication = {
 
         function validateInvitation(invitation) {
             return localUtils.checkObject(invitation, 'invitation')
-                .then(() => {
+                .then(() => {                    
                     if (!invitation.invitation[0].token) {
                         return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.api.authentication.noTokenProvided')}));
                     }
@@ -376,9 +376,10 @@ authentication = {
                         return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.api.authentication.noEmailProvided')}));
                     }
 
-                    if (!invitation.invitation[0].password) {
-                        return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.api.authentication.noPasswordProvided')}));
-                    }
+                    // We don't need to set password here as we login via active directory
+                    //if (!invitation.invitation[0].password) {
+                    //    return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.api.authentication.noPasswordProvided')}));
+                    //}
 
                     if (!invitation.invitation[0].name) {
                         return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.api.authentication.noNameProvided')}));
@@ -389,13 +390,13 @@ authentication = {
         }
 
         function processInvitation(invitation) {
-            const data = invitation.invitation[0],
+            const data = invitation.invitation[0];
                 inviteToken = security.url.decodeBase64(data.token);
-
+                
             return models.Invite.findOne({token: inviteToken, status: 'sent'}, options)
                 .then((_invite) => {
                     invite = _invite;
-
+                    
                     if (!invite) {
                         throw new common.errors.NotFoundError({message: common.i18n.t('errors.api.invites.inviteNotFound')});
                     }
@@ -404,14 +405,15 @@ authentication = {
                         throw new common.errors.NotFoundError({message: common.i18n.t('errors.api.invites.inviteExpired')});
                     }
 
+                    // No need to save password here, we are using active directory login
                     return models.User.add({
                         email: data.email,
                         name: data.name,
-                        password: data.password,
+                        //password: data.password,
                         roles: [invite.toJSON().role_id]
                     }, options);
                 })
-                .then(() => { return invite.destroy(options); });
+                .then(() => { return invite.destroy(options); });                
         }
 
         function formatResponse() {
