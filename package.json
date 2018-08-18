@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "2.0.0pr1",
+  "version": "2.0.0-pr1",
   "description": "Custom ghost blog with ldap authentication support",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
