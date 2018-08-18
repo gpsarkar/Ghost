@@ -10,8 +10,17 @@ var oauth2orize = require('oauth2orize'),
     AD = require('activedirectory2').promiseWrapper,
     config = require('../../config');
 
+// Set active directory settings
 const adConfig = config.get('ad');
-const ad = new AD(adConfig);
+const defaultADConfig = {
+    ad:{
+        url: "ldap://domain.com:389",
+        baseDN: "dc=domain,dc=com",
+        username: "username",
+        password: "password"
+    }}
+// We need to pass a default in case ad details are not present in conifg or ghost update complains of missing username error coming out of activedirectory2
+const ad = adConfig ? new AD(adConfig) : defaultADConfig;
 
 function exchangeRefreshToken(client, refreshToken, scope, body, authInfo, done) {
     models.Base.transaction(function (transacting) {
