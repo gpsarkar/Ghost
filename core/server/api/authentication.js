@@ -390,7 +390,7 @@ authentication = {
         }
 
         function processInvitation(invitation) {
-            const data = invitation.invitation[0];
+            const data = invitation.invitation[0],
                 inviteToken = security.url.decodeBase64(data.token);
 
             return models.Invite.findOne({token: inviteToken, status: 'sent'}, options)
@@ -413,7 +413,7 @@ authentication = {
                         roles: [invite.toJSON().role_id]
                     }, options);
                 })
-                .then(() => { return invite.destroy(options); });                
+                .then(() => { return invite.destroy(options); });
         }
 
         function formatResponse() {
