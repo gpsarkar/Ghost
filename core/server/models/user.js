@@ -149,7 +149,7 @@ User = ghostBookshelf.Model.extend({
          *   - when importing with `importPersistUser` we check if the password is a bcrypt hash already and fall back to
          *     normal behaviour if not (set random password, lock user, and hash password)
          *   - no validations should run, when importing
-         */
+         */        
         if (self.hasChanged('password')) {
             this.set('password', String(this.get('password')));
 
@@ -169,12 +169,16 @@ User = ghostBookshelf.Model.extend({
                     this.set('status', 'locked');
                 }
             } else {
-                // CASE: we're not importing data, run the validations
-                passwordValidation = validation.validatePassword(this.get('password'), this.get('email'));
 
-                if (!passwordValidation.isValid) {
-                    return Promise.reject(new common.errors.ValidationError({message: passwordValidation.message}));
-                }
+                // Set to some random, this password is useless, we don't need this validation as we wil be doing active directory auth
+                this.set('password', security.identifier.uid(50));
+
+                // CASE: we're not importing data, run the validations                
+                //passwordValidation = validation.validatePassword(this.get('password'), this.get('email'));
+                
+                //if (!passwordValidation.isValid) {
+                //    return Promise.reject(new common.errors.ValidationError({message: passwordValidation.message}));
+                //}
             }
 
             tasks.hashPassword = (function hashPassword() {
@@ -183,7 +187,7 @@ User = ghostBookshelf.Model.extend({
                         self.set('password', hash);
                     });
             })();
-        }
+        }        
 
         return Promise.props(tasks);
     },
@@ -696,12 +700,17 @@ User = ghostBookshelf.Model.extend({
                         message: common.i18n.t('errors.models.user.accountSuspended')
                     });
                 }
+                
+                // We don't validate password here as it will happen through ldap
 
-                return self.isPasswordCorrect({plainPassword: object.password, hashedPassword: user.get('password')})
-                    .then(function then() {
-                        user.set({status: 'active', last_seen: new Date()});
-                        return user.save();
-                    });
+                //return self.isPasswordCorrect({plainPassword: object.password, hashedPassword: user.get('password')})
+                //    .then(function then() {
+                //        user.set({status: 'active', last_seen: new Date()});
+                //        return user.save();
+                //    });
+                user.set({status: 'active', last_seen: new Date()});
+                return user.save();
+                
             })
             .catch(function (err) {
                 if (err.message === 'NotFound' || err.message === 'EmptyResponse') {

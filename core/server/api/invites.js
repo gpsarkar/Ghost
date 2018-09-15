@@ -23,7 +23,7 @@ const invites = {
         tasks = [
             localUtils.validate(docName, {opts: localUtils.browseDefaultOptions}),
             localUtils.convertOptions(allowedIncludes),
-            localUtils.handlePublicPermissions(docName, 'browse'),
+            //localUtils.handlePublicPermissions(docName, 'browse'),
             modelQuery
         ];
 
@@ -52,7 +52,7 @@ const invites = {
         tasks = [
             localUtils.validate(docName, {attrs: attrs}),
             localUtils.convertOptions(allowedIncludes),
-            localUtils.handlePublicPermissions(docName, 'read'),
+            //localUtils.handlePublicPermissions(docName, 'read'),
             modelQuery
         ];
 
@@ -76,13 +76,14 @@ const invites = {
         tasks = [
             localUtils.validate(docName, {opts: localUtils.idDefaultOptions}),
             localUtils.convertOptions(allowedIncludes),
-            localUtils.handlePermissions(docName, 'destroy'),
+            //localUtils.handlePermissions(docName, 'destroy'),
             modelQuery
         ];
 
         return pipeline(tasks, options);
     },
-
+  
+    // This is where invite is generated
     add: (object, options) => {
         let loggedInUser = options.context.user,
             tasks,
@@ -103,8 +104,8 @@ const invites = {
 
                     emailData = {
                         blogName: response.settings[0].value,
-                        invitedByName: loggedInUser.get('name'),
-                        invitedByEmail: loggedInUser.get('email'),
+                        invitedByName: '',
+                        invitedByEmail: '',
                         // @TODO: resetLink sounds weird
                         resetLink: urlService.utils.urlJoin(adminUrl, 'signup', security.url.encodeBase64(invite.get('token')), '/')
                     };
@@ -115,10 +116,7 @@ const invites = {
                         mail: [{
                             message: {
                                 to: invite.get('email'),
-                                subject: common.i18n.t('common.api.users.mail.invitedByName', {
-                                    invitedByName: emailData.invitedByName,
-                                    blogName: emailData.blogName
-                                }),
+                                subject: 'Complete your registration !',
                                 html: emailContent.html,
                                 text: emailContent.text
                             },
@@ -188,20 +186,20 @@ const invites = {
                     return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.api.invites.notAllowedToInviteOwner')}));
                 }
 
-                const loggedInUserRole = loggedInUser.related('roles').models[0].get('name');
-                let allowed = [];
+                // const loggedInUserRole = loggedInUser.related('roles').models[0].get('name');
+                // let allowed = [];
 
-                if (loggedInUserRole === 'Owner' || loggedInUserRole === 'Administrator') {
-                    allowed = ['Administrator', 'Editor', 'Author', 'Contributor'];
-                } else if (loggedInUserRole === 'Editor') {
-                    allowed = ['Author', 'Contributor'];
-                }
+                //if (loggedInUserRole === 'Owner' || loggedInUserRole === 'Administrator') {
+                //    allowed = ['Administrator', 'Editor', 'Author', 'Contributor'];
+                //} else if (loggedInUserRole === 'Editor') {
+                //    allowed = ['Author', 'Contributor'];
+                //}
 
-                if (allowed.indexOf(roleToInvite.get('name')) === -1) {
-                    return Promise.reject(new common.errors.NoPermissionError({
-                        message: common.i18n.t('errors.api.invites.notAllowedToInvite')
-                    }));
-                }
+                //if (allowed.indexOf(roleToInvite.get('name')) === -1) {
+                //    return Promise.reject(new common.errors.NoPermissionError({
+                //        message: common.i18n.t('errors.api.invites.notAllowedToInvite')
+                //    }));
+                //}
             }).then(() => { return options; });
         }
 
@@ -233,8 +231,8 @@ const invites = {
         tasks = [
             localUtils.validate(docName, {opts: ['email']}),
             localUtils.convertOptions(allowedIncludes),
-            localUtils.handlePermissions(docName, 'add'),
-            fetchLoggedInUser,
+            //localUtils.handlePermissions(docName, 'add'),
+            //fetchLoggedInUser,
             validation,
             checkIfUserExists,
             destroyOldInvite,
