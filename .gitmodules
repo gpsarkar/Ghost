@@ -4,5 +4,5 @@
 [submodule "core/client"]
 	path = core/client
 	url = https://github.com/gpsarkar/Ghost-Admin.git
-	branch = 2.0.0pr1
+	branch = ldap
 
