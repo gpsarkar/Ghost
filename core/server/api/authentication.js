@@ -14,7 +14,7 @@ const Promise = require('bluebird'),
     mailAPI = require('./mail'),
     settingsAPI = require('./settings'),
     tokenSecurity = {};
-    
+
 let authentication;
 
 /**
@@ -367,7 +367,7 @@ authentication = {
 
         function validateInvitation(invitation) {
             return localUtils.checkObject(invitation, 'invitation')
-                .then(() => {                    
+                .then(() => {
                     if (!invitation.invitation[0].token) {
                         return Promise.reject(new common.errors.ValidationError({message: common.i18n.t('errors.api.authentication.noTokenProvided')}));
                     }
@@ -392,11 +392,11 @@ authentication = {
         function processInvitation(invitation) {
             const data = invitation.invitation[0];
                 inviteToken = security.url.decodeBase64(data.token);
-                
+
             return models.Invite.findOne({token: inviteToken, status: 'sent'}, options)
                 .then((_invite) => {
                     invite = _invite;
-                    
+
                     if (!invite) {
                         throw new common.errors.NotFoundError({message: common.i18n.t('errors.api.invites.inviteNotFound')});
                     }
